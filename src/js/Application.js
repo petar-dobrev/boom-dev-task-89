@@ -18,7 +18,8 @@ export default class Application extends EventEmitter {
     this.apiURL = "https://swapi.boom.dev/api/planets";
 
     this.planetsContainer = document.querySelector(".planets-container");
-    this._loading = document.createElement("progress");
+    this._loading = document.querySelector(".progress");
+
     this.planets = [];
 
     this._render();
@@ -39,9 +40,9 @@ export default class Application extends EventEmitter {
   async _checkApiForNextPage(nextPageUrl) {
     if (nextPageUrl != null) {
       this.apiURL = nextPageUrl;
-      return true
+      return true;
     }
-    return false
+    return false;
   }
 
   async _create() {
@@ -56,12 +57,13 @@ export default class Application extends EventEmitter {
   }
 
   async _startLoading() {
-    this.planetsContainer.appendChild(this._loading);
     await this._load();
+    this._loading.style.visibility = "visible";
+
   }
 
   async _stopLoading() {
-    this.planetsContainer.removeChild(this._loading);
+    this._loading.style.visibility = "hidden";
   }
 
   async _render() {
