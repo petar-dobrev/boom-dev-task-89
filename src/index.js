@@ -8,4 +8,3 @@ window.addEventListener("DOMContentLoaded", () => {
   window.__JS_APP = app;
 });
 
-

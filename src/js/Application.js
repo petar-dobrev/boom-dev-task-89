@@ -15,40 +15,57 @@ export default class Application extends EventEmitter {
       alert("💣");
     });
 
-    const planetsContainer = document.querySelector(".planets-container");
-    const _loading = document.createElement("progress");
+    this.apiURL = "https://swapi.boom.dev/api/planets";
 
-    let planets = [];
+    this.planetsContainer = document.querySelector(".planets-container");
+    this._loading = document.createElement("progress");
+    this.planets = [];
 
-    const _load = async () => {
-      const apiURL = "https://swapi.boom.dev/api/planets";
-      const response = await fetch(apiURL);
-      const data = await response.json();
-      planets.push(data.results);
-    };
-
-    const _create = async () => {
-      console.log(planets);
-      planets[0].forEach((planet) => {
-        const planetEl = document.createElement("p");
-        planetEl.classList.add("planet");
-        planetEl.innerText = planet.name;
-        planetsContainer.appendChild(planetEl);
-      });
-    };
-
-    const _startLoading = async () => {
-      planetsContainer.appendChild(_loading);
-      await _load();
-      await _create();
-    };
-
-    const _stopLoading = () => {
-      planetsContainer.removeChild(_loading);
-    };
-
-    _startLoading().then(_stopLoading);
+    this._render();
 
     this.emit(Application.events.READY);
+  }
+
+  async _load() {
+    const response = await fetch(this.apiURL);
+    const data = await response.json();
+    this.planets.push(...data.results);
+    this._checkApiForNextPage(data.next);
+    (await this._checkApiForNextPage(data.next))
+      ? this._load()
+      : await this._create();
+  }
+
+  async _checkApiForNextPage(nextPageUrl) {
+    if (nextPageUrl != null) {
+      this.apiURL = nextPageUrl;
+      return true
+    }
+    return false
+  }
+
+  async _create() {
+    console.log(this.planets);
+    this.planets.forEach((planet) => {
+      const planetEl = document.createElement("p");
+      planetEl.classList.add("planet");
+      planetEl.innerText = planet.name;
+      this.planetsContainer.appendChild(planetEl);
+    });
+    console.log("create");
+  }
+
+  async _startLoading() {
+    this.planetsContainer.appendChild(this._loading);
+    await this._load();
+  }
+
+  async _stopLoading() {
+    this.planetsContainer.removeChild(this._loading);
+  }
+
+  async _render() {
+    await this._startLoading();
+    await this._stopLoading();
   }
 }
